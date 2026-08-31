@@ -1,0 +1,110 @@
+{
+  "kalla": "Jägarnas Riksförbund, jakttidstabell per län",
+  "kalla_url": {
+    "Gavleborg": "https://www.jagarnasriksforbund.se/jakttider/gavleborgs/",
+    "Dalarna": "https://www.jagarnasriksforbund.se/jakttider/dalarnas/"
+  },
+  "hamtad": "2026-08-31",
+  "galler_sasong": "2024/2025",
+  "varning": "Källan anger säsongen 2024/2025. Älgjakten beslutas dessutom av Länsstyrelsen per älgförvaltningsområde och ändras årligen. Tabellen är en överblick, inte ett besked.",
+  "lansstyrelsen": {
+    "Dalarna": "https://www.lansstyrelsen.se/dalarna/djur/jakt-och-vilt.html",
+    "Gavleborg": "https://www.lansstyrelsen.se/gavleborg/djur/jakt-och-vilt.html"
+  },
+  "arter": [
+    {
+      "art": "Älg",
+      "osaker": true,
+      "gavleborg": [{"fran": "09-01", "till": "01-31"}],
+      "dalarna": [{"fran": "10-08", "till": "01-31"}],
+      "anm": "Länsstyrelsen beslutar exakt tid per älgförvaltningsområde, med uppehåll under brunsten. För 2026 anges 1–23 sept samt 8 okt–31 jan i delar av båda länen. Kontrollera ditt ÄFO."
+    },
+    {
+      "art": "Rådjur",
+      "gavleborg": [{"fran": "10-01", "till": "01-31"}],
+      "dalarna": [{"fran": "10-01", "till": "01-31"}],
+      "anm": "Alla djur. Handjur med horn även 1/5–15/6 och 16/8–30/9. Kid 1/9–30/9."
+    },
+    {
+      "art": "Vildsvin",
+      "gavleborg": [{"fran": "04-01", "till": "01-31"}],
+      "dalarna": [{"fran": "04-01", "till": "01-31"}],
+      "anm": "Utom sugga med randiga kultingar. Årsunge är tillåten året runt."
+    },
+    {
+      "art": "Kronhjort",
+      "gavleborg": [{"fran": "10-08", "till": "01-31"}],
+      "dalarna": [{"fran": "10-08", "till": "01-31"}],
+      "anm": "Handjur. Hind och kalv 16/8–28/2."
+    },
+    {
+      "art": "Dovhjort",
+      "gavleborg": [{"fran": "10-01", "till": "10-20"}, {"fran": "11-16", "till": "02-28"}],
+      "dalarna": [{"fran": "10-01", "till": "10-20"}, {"fran": "11-16", "till": "02-28"}],
+      "anm": "Handjur. Hind och kalv 21/10–15/11 samt 1/3–31/3."
+    },
+    {
+      "art": "Räv",
+      "gavleborg": [{"fran": "08-01", "till": "03-31"}],
+      "dalarna": [{"fran": "08-01", "till": "03-31"}],
+      "anm": "Rödräv."
+    },
+    {
+      "art": "Grävling",
+      "gavleborg": [{"fran": "08-01", "till": "01-31"}],
+      "dalarna": [{"fran": "08-01", "till": "01-31"}],
+      "anm": ""
+    },
+    {
+      "art": "Mård",
+      "gavleborg": [{"fran": "09-01", "till": "03-31"}],
+      "dalarna": [{"fran": "09-01", "till": "03-31"}],
+      "anm": "Skogsmård."
+    },
+    {
+      "art": "Bäver",
+      "gavleborg": [{"fran": "10-01", "till": "05-15"}],
+      "dalarna": [{"fran": "10-01", "till": "05-15"}],
+      "anm": ""
+    },
+    {
+      "art": "Skogshare",
+      "gavleborg": [{"fran": "09-01", "till": "02-28"}],
+      "dalarna": [{"fran": "09-01", "till": "02-28"}],
+      "anm": ""
+    },
+    {
+      "art": "Tjäder",
+      "gavleborg": [{"fran": "08-25", "till": "11-15"}],
+      "dalarna": [{"fran": "08-25", "till": "11-15"}],
+      "anm": "Alla djur."
+    },
+    {
+      "art": "Orre",
+      "gavleborg": [{"fran": "08-25", "till": "11-15"}],
+      "dalarna": [{"fran": "08-25", "till": "11-15"}],
+      "anm": "Alla djur."
+    },
+    {
+      "art": "Björn",
+      "osaker": true,
+      "gavleborg": [],
+      "dalarna": [{"fran": "08-21", "till": "10-15"}],
+      "anm": "Licensjakt. Beslutas årligen av Länsstyrelsen med länsvis tilldelning, och avlyses när kvoten är fylld. Kontrollera Länsstyrelsens beslut för innevarande år."
+    },
+    {
+      "art": "Lo",
+      "osaker": true,
+      "gavleborg": [],
+      "dalarna": [],
+      "anm": "Licensjakt beslutas årligen av Länsstyrelsen, normalt i mars. Ingen fast jakttid."
+    },
+    {
+      "art": "Varg",
+      "osaker": true,
+      "gavleborg": [],
+      "dalarna": [],
+      "anm": "Licensjakt beslutas årligen av Länsstyrelsen, normalt i januari. Ingen fast jakttid."
+    }
+  ]
+}

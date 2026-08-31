@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Viltkoll — Hofors–Falun</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --bg: #14161a;
+    --panel: #1c1f25;
+    --panel-2: #23272f;
+    --linje: #313742;
+    --text: #e8eaed;
+    --svag: #98a1b0;
+    --accent: #d98324;
+    --gron: #6a9a34;
+    --rod: #c0453c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--linje);
+    background: var(--panel);
+  }
+  h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: -.01em; }
+  .meta { color: var(--svag); font-size: 13px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 24px 60px; }
+  section { margin-bottom: 26px; }
+  h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--svag); margin: 0 0 10px; font-weight: 600;
+  }
+
+  /* Jakttider */
+  .jakt-rutor { display: flex; flex-wrap: wrap; gap: 8px; }
+  .jakt {
+    background: var(--panel); border: 1px solid var(--linje);
+    border-radius: 8px; padding: 9px 12px; min-width: 128px;
+  }
+  .jakt.oppen { border-color: var(--gron); }
+  .jakt-art { font-weight: 600; }
+  .jakt-status { font-size: 12px; color: var(--svag); margin-top: 2px; }
+  .jakt.oppen .jakt-status { color: #8fc04a; }
+  .jakt-osaker::after {
+    content: "?"; margin-left: 5px; color: var(--accent); font-weight: 700;
+  }
+  .varning {
+    margin-top: 10px; padding: 10px 12px; font-size: 13px;
+    background: #2a2317; border: 1px solid #5c4a22; border-radius: 8px;
+    color: #e8d3ab;
+  }
+  .varning a { color: var(--accent); }
+
+  /* Filter */
+  .filter { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+  .chip {
+    border: 1px solid var(--linje); background: var(--panel);
+    color: var(--text); border-radius: 999px; padding: 5px 12px;
+    font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  .chip:hover { border-color: var(--svag); }
+  .chip.pa { background: var(--accent); border-color: var(--accent); color: #1a1206; font-weight: 600; }
+  .chip .prick {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 6px; vertical-align: 1px;
+  }
+  .avdelare { width: 1px; height: 22px; background: var(--linje); margin: 0 5px; }
+
+  #karta { height: 460px; border-radius: 10px; border: 1px solid var(--linje); }
+
+  /* Lista */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th {
+    text-align: left; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--svag); font-weight: 600;
+    padding: 0 10px 8px; border-bottom: 1px solid var(--linje);
+  }
+  td { padding: 9px 10px; border-bottom: 1px solid #22262d; vertical-align: top; }
+  tr:hover td { background: var(--panel); }
+  .art-namn { font-weight: 600; white-space: nowrap; }
+  .datum { color: var(--svag); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .verifierad {
+    font-size: 11px; background: #24361a; color: #8fc04a;
+    border-radius: 4px; padding: 2px 6px; white-space: nowrap;
+  }
+  .obedomd { font-size: 12px; color: var(--svag); }
+  td a { color: var(--accent); text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  .antal-rad { color: var(--svag); font-size: 13px; margin-bottom: 8px; }
+  .mer {
+    display: block; width: 100%; margin-top: 12px; padding: 10px;
+    background: var(--panel); border: 1px solid var(--linje); border-radius: 8px;
+    color: var(--text); font: inherit; cursor: pointer;
+  }
+  .mer:hover { border-color: var(--svag); }
+  .tomt { color: var(--svag); padding: 24px 0; }
+  .fel {
+    background: #2c1a1a; border: 1px solid #6b2f2f; border-radius: 10px;
+    padding: 18px 20px; color: #f0c8c8;
+  }
+  .fel code {
+    background: #1a1010; padding: 2px 6px; border-radius: 4px;
+    font-size: 13px; color: #ffb4b4;
+  }
+  .kalla-not { font-size: 12px; color: var(--svag); margin-top: 8px; }
+  .kalla-not a { color: var(--svag); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Viltkoll — Hofors–Falun</h1>
+  <div class="meta" id="rubrik-meta"></div>
+</header>
+
+<main id="innehall">
+  <div class="fel" id="ingen-data">
+    <strong>Ingen data hittad.</strong>
+    <p>Filen <code>data.js</code> saknas eller kunde inte läsas. Kör hämtningen först:</p>
+    <p><code>python hamta.py</code></p>
+  </div>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  const D = window.VILTDATA;
+  if (!D || !D.observationer) return;
+  document.getElementById("ingen-data").remove();
+
+  const FARGER = {
+    "Varg":       "#e04b3c",
+    "Björn":      "#b8722c",
+    "Lo":         "#d9a441",
+    "Järv":       "#8d6e4a",
+    "Kungsörn":   "#9b6bb5",
+    "Älg":        "#5e8c4a",
+    "Rådjur":     "#7fae5e",
+    "Kronhjort":  "#4f7d5c",
+    "Dovhjort":   "#6f9c7d",
+    "Vildsvin":   "#8a6a55",
+    "Räv":        "#d97a3c",
+    "Bäver":      "#5f8ba8",
+    "Skogshare":  "#9aa6b5",
+    "Tjäder":     "#4a6f9b",
+    "Orre":       "#6b86b5",
+    "Grävling":   "#8f8f96",
+    "Mård":       "#a08258",
+    "Mårdhund":   "#7d7060"
+  };
+  const farg = a => FARGER[a] || "#8b95a3";
+
+  // Ordning: rovdjur först, sedan klövvilt, sedan resten.
+  const PRIO = ["Varg","Björn","Lo","Järv","Kungsörn","Älg","Rådjur","Vildsvin",
+                "Kronhjort","Dovhjort"];
+  const arterIData = [...new Set(D.observationer.map(o => o.art))]
+    .sort((a, b) => {
+      const ia = PRIO.indexOf(a), ib = PRIO.indexOf(b);
+      if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+      return a.localeCompare(b, "sv");
+    });
+
+  const idag = new Date();
+
+  // --- Jakttider ------------------------------------------------------------
+  // Perioderna är "MM-DD" och kan sträcka sig över årsskiftet (1/9–31/1).
+  function inomPeriod(period, d) {
+    const nu = String(d.getMonth() + 1).padStart(2, "0") + "-" +
+               String(d.getDate()).padStart(2, "0");
+    if (period.fran <= period.till) return nu >= period.fran && nu <= period.till;
+    return nu >= period.fran || nu <= period.till;  // över årsskiftet
+  }
+
+  function svLan(iso) {
+    const [m, d] = iso.split("-").map(Number);
+    const man = ["jan","feb","mars","april","maj","juni","juli","aug","sep","okt","nov","dec"];
+    return d + " " + man[m - 1];
+  }
+
+  function ritaJakttider() {
+    const J = D.jakttider;
+    if (!J || !J.arter || !J.arter.length) return "";
+
+    const rutor = J.arter.map(a => {
+      // Hofors ligger i Gävleborg, Falun i Dalarna. Öppet i endera länet
+      // räknas som öppet, men vi skriver ut vilket.
+      const oppna = [];
+      for (const lan of ["gavleborg", "dalarna"]) {
+        for (const p of (a[lan] || [])) {
+          if (inomPeriod(p, idag)) oppna.push({ lan, p });
+        }
+      }
+      const ar = oppna.length > 0;
+      let status;
+      if (ar) {
+        const lan = [...new Set(oppna.map(o => o.lan === "gavleborg" ? "Gävleborg" : "Dalarna"))];
+        status = "Till " + svLan(oppna[0].p.till) +
+                 (lan.length === 1 ? " · " + lan[0] : "");
+      } else {
+        // Även en art som beslutas årsvis har ofta en normal period värd att visa.
+        const nasta = (a.gavleborg || []).concat(a.dalarna || [])[0];
+        status = nasta ? "Öppnar " + svLan(nasta.fran)
+                       : (a.osaker ? "Beslutas årsvis" : "Ingen fast tid");
+      }
+      const titel = (a.anm || "").replace(/"/g, "&quot;");
+      return `<div class="jakt ${ar ? "oppen" : ""}" title="${titel}">
+        <div class="jakt-art ${a.osaker ? "jakt-osaker" : ""}">${a.art}</div>
+        <div class="jakt-status">${status}</div>
+      </div>`;
+    }).join("");
+
+    const lst = J.lansstyrelsen || {};
+    return `<section>
+      <h2>Jakttider — läget idag</h2>
+      <div class="jakt-rutor">${rutor}</div>
+      <div class="varning">
+        <strong>Kontrollera innan du går ut.</strong> ${J.varning || ""}
+        Källa: <a href="${(J.kalla_url || {}).Gavleborg || "#"}" target="_blank" rel="noopener">${J.kalla || ""}</a>,
+        hämtad ${J.hamtad || "?"}. Länsstyrelsen:
+        <a href="${lst.Dalarna || "#"}" target="_blank" rel="noopener">Dalarna</a> ·
+        <a href="${lst.Gavleborg || "#"}" target="_blank" rel="noopener">Gävleborg</a>.
+        Arter märkta <span style="color:var(--accent);font-weight:700">?</span> beslutas årsvis av Länsstyrelsen.
+      </div>
+    </section>`;
+  }
+
+  // --- Sidans stomme --------------------------------------------------------
+  document.getElementById("rubrik-meta").textContent =
+    `${D.radie_km} km runt Hofors–Falun · ${D.observationer.length} observationer ` +
+    `${D.period.fran} till ${D.period.till} · uppdaterad ${D.uppdaterad.replace("T", " ")}`;
+
+  document.getElementById("innehall").innerHTML = ritaJakttider() + `
+    <section>
+      <h2>Filter</h2>
+      <div class="filter" id="filter-art"></div>
+      <div class="filter" id="filter-ovrigt" style="margin-top:8px"></div>
+    </section>
+    <section><div id="karta"></div></section>
+    <section>
+      <h2>Observationer</h2>
+      <div class="antal-rad" id="antal"></div>
+      <table>
+        <thead><tr>
+          <th>Datum</th><th>Art</th><th>Typ</th><th>Plats</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody id="lista"></tbody>
+      </table>
+      <button class="mer" id="mer" hidden>Visa fler</button>
+      <div class="kalla-not">
+        Rovdjur från <a href="https://skandobs.se/" target="_blank" rel="noopener">Skandobs</a> (realtid,
+        med Länsstyrelsens valideringsstatus). Övrigt vilt från Artportalen via
+        <a href="https://www.gbif.org/" target="_blank" rel="noopener">GBIF</a>, som har några dagars eftersläpning.
+      </div>
+    </section>`;
+
+  // --- Filterläge -----------------------------------------------------------
+  const lage = { arter: new Set(arterIData), dagar: 365, baraVerifierade: false };
+  let visat = 50;
+
+  const filterArt = document.getElementById("filter-art");
+  filterArt.innerHTML =
+    `<button class="chip pa" data-alla="1">Alla arter</button><div class="avdelare"></div>` +
+    arterIData.map(a =>
+      `<button class="chip pa" data-art="${a}">
+         <span class="prick" style="background:${farg(a)}"></span>${a}
+       </button>`).join("");
+
+  document.getElementById("filter-ovrigt").innerHTML =
+    [30, 90, 365].map(d =>
+      `<button class="chip ${d === 365 ? "pa" : ""}" data-dagar="${d}">
+         ${d === 365 ? "Senaste året" : "Senaste " + d + " dagarna"}
+       </button>`).join("") +
+    `<div class="avdelare"></div>
+     <button class="chip" data-verifierade="1">Bara verifierade av Länsstyrelsen</button>`;
+
+  // --- Karta ----------------------------------------------------------------
+  const karta = L.map("karta").setView([D.centrum.lat, D.centrum.lon], 8);
+
+  // Inte OpenStreetMaps egna brickservrar: deras användningspolicy kräver en
+  // Referer-header, och en sida som öppnas med dubbelklick (file://) skickar
+  // ingen — då blir hela kartan rutor med "Access blocked". Esri och Carto
+  // ställer inget sådant krav.
+  const lager_topo = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 17, attribution: "Esri" });
+  const lager_flyg = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 17, attribution: "Esri" });
+  const lager_karta = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+    { maxZoom: 18, attribution: "&copy; OpenStreetMap, &copy; CARTO" });
+
+  lager_topo.addTo(karta);
+  L.control.layers({
+    "Terräng": lager_topo,
+    "Flygfoto": lager_flyg,
+    "Karta": lager_karta
+  }, null, { position: "topright" }).addTo(karta);
+  L.circle([D.centrum.lat, D.centrum.lon], {
+    radius: D.radie_km * 1000, color: "#4a5260", weight: 1,
+    fill: false, dashArray: "5,6"
+  }).addTo(karta);
+  const lager = L.layerGroup().addTo(karta);
+
+  // --- Rendering ------------------------------------------------------------
+  function urval() {
+    const grans = new Date(idag.getTime() - lage.dagar * 864e5)
+      .toISOString().slice(0, 10);
+    return D.observationer.filter(o =>
+      lage.arter.has(o.art) &&
+      o.datum >= grans &&
+      (!lage.baraVerifierade || o.verifierad));
+  }
+
+  function rita() {
+    const rader = urval();
+
+    lager.clearLayers();
+    for (const o of rader) {
+      L.circleMarker([o.lat, o.lon], {
+        radius: o.verifierad ? 7 : 5,
+        color: o.verifierad ? "#ffffff" : farg(o.art),
+        weight: o.verifierad ? 2 : 1,
+        fillColor: farg(o.art),
+        fillOpacity: 0.85
+      }).bindPopup(
+        `<strong>${o.art}</strong> — ${o.typ}<br>` +
+        `${o.datum}${o.tid ? " " + o.tid : ""}<br>` +
+        `${o.plats || o.kommun || ""}<br>` +
+        (o.status ? `<em>${o.status}</em><br>` : "") +
+        `<a href="${o.lank}" target="_blank" rel="noopener">Öppna i ${o.kalla}</a>`
+      ).addTo(lager);
+    }
+
+    const verif = rader.filter(o => o.verifierad).length;
+    document.getElementById("antal").textContent =
+      `${rader.length} observationer${verif ? ` · ${verif} verifierade av Länsstyrelsen` : ""}`;
+
+    const kropp = document.getElementById("lista");
+    if (!rader.length) {
+      kropp.innerHTML = `<tr><td colspan="6" class="tomt">Inga observationer med de filtren.</td></tr>`;
+      document.getElementById("mer").hidden = true;
+      return;
+    }
+
+    kropp.innerHTML = rader.slice(0, visat).map(o => `
+      <tr>
+        <td class="datum">${o.datum}${o.tid ? "<br>" + o.tid : ""}</td>
+        <td class="art-namn">
+          <span class="prick" style="display:inline-block;width:8px;height:8px;
+                border-radius:50%;margin-right:6px;background:${farg(o.art)}"></span>${o.art}
+          ${o.antal > 1 ? ` <span class="obedomd">×${o.antal}</span>` : ""}
+        </td>
+        <td>${o.typ}</td>
+        <td>${o.plats || "—"}${o.kommun ? `<br><span class="obedomd">${o.kommun}</span>` : ""}</td>
+        <td>${o.verifierad
+              ? `<span class="verifierad">Verifierad</span>`
+              : `<span class="obedomd">${o.status || o.kalla}</span>`}</td>
+        <td><a href="${o.lank}" target="_blank" rel="noopener">Öppna</a></td>
+      </tr>`).join("");
+
+    const mer = document.getElementById("mer");
+    mer.hidden = rader.length <= visat;
+    mer.textContent = `Visa fler (${rader.length - visat} kvar)`;
+  }
+
+  // --- Klick ----------------------------------------------------------------
+  filterArt.addEventListener("click", e => {
+    const knapp = e.target.closest(".chip");
+    if (!knapp) return;
+    if (knapp.dataset.alla) {
+      const allaPa = lage.arter.size === arterIData.length;
+      lage.arter = allaPa ? new Set() : new Set(arterIData);
+    } else {
+      const a = knapp.dataset.art;
+      lage.arter.has(a) ? lage.arter.delete(a) : lage.arter.add(a);
+    }
+    for (const k of filterArt.querySelectorAll(".chip")) {
+      k.classList.toggle("pa", k.dataset.alla
+        ? lage.arter.size === arterIData.length
+        : lage.arter.has(k.dataset.art));
+    }
+    visat = 50;
+    rita();
+  });
+
+  document.getElementById("filter-ovrigt").addEventListener("click", e => {
+    const knapp = e.target.closest(".chip");
+    if (!knapp) return;
+    if (knapp.dataset.dagar) {
+      lage.dagar = +knapp.dataset.dagar;
+      for (const k of document.querySelectorAll("[data-dagar]"))
+        k.classList.toggle("pa", k === knapp);
+    } else {
+      lage.baraVerifierade = !lage.baraVerifierade;
+      knapp.classList.toggle("pa", lage.baraVerifierade);
+    }
+    visat = 50;
+    rita();
+  });
+
+  document.getElementById("mer").addEventListener("click", () => {
+    visat += 100;
+    rita();
+  });
+
+  rita();
+})();
+</script>
+</body>
+</html>
